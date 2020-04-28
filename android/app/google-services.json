@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "879792895159",
+    "firebase_url": "https://smart-fish-tank-69105.firebaseio.com",
+    "project_id": "smart-fish-tank-69105",
+    "storage_bucket": "smart-fish-tank-69105.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879792895159:android:6613a477462e67d35a4932",
+        "android_client_info": {
+          "package_name": "com.example.smartfish"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "879792895159-jumc6389qi6ne0to5ame4jtsfph2s4lo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuFBAJyDjNGsbsoaqC6AHwJphnIa7O0mo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "879792895159-jumc6389qi6ne0to5ame4jtsfph2s4lo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
