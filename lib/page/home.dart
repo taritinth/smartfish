@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:outline_material_icons/outline_material_icons.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:smartfish/theme/AppColors.dart';
 import 'package:smartfish/theme/ScreenUtil.dart';
@@ -8,6 +9,8 @@ class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
 }
+
+bool connectStatus = false;
 
 class _HomeState extends State<Home> {
   @override
@@ -21,60 +24,78 @@ class _HomeState extends State<Home> {
         padding: EdgeInsets.symmetric(
             horizontal: screenWidthDp / 15, vertical: screenHeightDp / 20),
         children: <Widget>[
-          AnimatedContainer(
-            duration: Duration(milliseconds: 200),
-            padding: EdgeInsets.all(
-              screenWidthDp / 20,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(screenWidthDp / 15),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.cardShadow,
-                  offset: Offset(0.0, 10.0),
-                  blurRadius: 20.0,
-                )
-              ],
-              color: AppColors.primary,
-            ),
-            child: Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Text(
-                      'สถานะ',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: s45,
+          InkWell(
+            onTap: () {
+              setState(() {
+                connectStatus = !connectStatus;
+              });
+            },
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 200),
+              curve: Curves.easeInOutCubic,
+              padding: EdgeInsets.all(
+                screenWidthDp / 20,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(screenWidthDp / 15),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.cardShadow,
+                    offset: Offset(0.0, 10.0),
+                    blurRadius: 20.0,
+                  )
+                ],
+                color: connectStatus
+                    ? AppColors.primary
+                    : AppColors.connectionLost,
+              ),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Text(
+                        'สถานะ',
+                        style: TextStyle(
+                          color: connectStatus
+                              ? Colors.white
+                              : AppColors.connectionLostText,
+                          fontSize: s45,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Icon(
-                  Icons.wifi,
-                  size: screenWidthDp / 6,
-                  color: Colors.white,
-                ),
-                Column(
-                  children: <Widget>[
-                    Text(
-                      'เชื่อมต่ออยู่',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: s48,
+                    ],
+                  ),
+                  Icon(
+                    connectStatus ? Icons.wifi : OMIcons.wifiOff,
+                    size: screenWidthDp / 6,
+                    color: connectStatus
+                        ? Colors.white
+                        : AppColors.connectionLostText,
+                  ),
+                  Column(
+                    children: <Widget>[
+                      Text(
+                        connectStatus ? 'เชื่อมต่ออยู่' : 'ไม่ได้เชื่อมต่อ',
+                        style: TextStyle(
+                          color: connectStatus
+                              ? Colors.white
+                              : AppColors.connectionLostText,
+                          fontSize: s48,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'ข้อมูลล่าสุด วันนี้ 20:21 น.',
-                      style: TextStyle(
-                        height: 0.7,
-                        color: Colors.white54,
-                        fontSize: s28,
+                      Text(
+                        'ข้อมูลล่าสุด วันนี้ 20:21 น.',
+                        style: TextStyle(
+                          height: 0.7,
+                          color: connectStatus
+                              ? Colors.white54
+                              : Colors.grey.withOpacity(0.7),
+                          fontSize: s28,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           Container(
