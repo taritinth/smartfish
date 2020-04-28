@@ -21,7 +21,8 @@ class _HomeState extends State<Home> {
         padding: EdgeInsets.symmetric(
             horizontal: screenWidthDp / 15, vertical: screenHeightDp / 20),
         children: <Widget>[
-          Container(
+          AnimatedContainer(
+            duration: Duration(milliseconds: 200),
             padding: EdgeInsets.all(
               screenWidthDp / 20,
             ),
@@ -152,7 +153,7 @@ class _HomeState extends State<Home> {
                 Row(
                   children: <Widget>[
                     Text(
-                      'ความขุ่นของน้ำ',
+                      'อาหารที่เหลือ',
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: s45,

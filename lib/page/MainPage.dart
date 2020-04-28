@@ -19,7 +19,11 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> pages = [Home(), Timer(), Lighting()];
 
   _scrollTo(int index) {
-    pageController.jumpToPage(index);
+    pageController.animateToPage(index,
+        duration: Duration(milliseconds: 150), curve: Curves.easeInCubic);
+  }
+
+  _setCurrentPage(int index) {
     setState(() {
       currentPages = index;
     });
@@ -76,19 +80,6 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
       ),
-      // body: PageView.builder(
-      //   controller: pageController,
-      //   itemCount: pages.length,
-      //   physics: BouncingScrollPhysics(),
-      //   onPageChanged: (int index) {
-      //     setState(() {
-      //       currentPages = index;
-      //     });
-      //   },
-      //   itemBuilder: (context, position) {
-      //     return pages[currentPages];
-      //   },
-      // ),
       body: PageView(
         controller: pageController,
         physics: BouncingScrollPhysics(),
@@ -104,11 +95,6 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
       bottomNavigationBar: Container(
-        // color: Colors.red,
-        // padding: EdgeInsets.only(
-        //   left: screenWidthDp / 15,
-        //   right: screenWidthDp / 15,
-        // ),
         height: bottomBarHeight,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -125,6 +111,7 @@ class _MainPageState extends State<MainPage> {
                 ),
                 onTap: () {
                   _scrollTo(0);
+                  _setCurrentPage(0);
                 },
               ),
             ),
@@ -140,6 +127,7 @@ class _MainPageState extends State<MainPage> {
                 ),
                 onTap: () {
                   _scrollTo(1);
+                  _setCurrentPage(1);
                 },
               ),
             ),
@@ -183,6 +171,7 @@ class _MainPageState extends State<MainPage> {
                 ),
                 onTap: () {
                   _scrollTo(2);
+                  _setCurrentPage(2);
                 },
               ),
             ),

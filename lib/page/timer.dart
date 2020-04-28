@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smartfish/theme/AppColors.dart';
 import 'package:smartfish/theme/ScreenUtil.dart';
@@ -9,6 +10,13 @@ class Timer extends StatefulWidget {
 
 class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
   int _hourValue = 0, _minValue = 0, _durValue = 200;
+  bool toggleValue = false;
+
+  _toggleButton() {
+    setState(() {
+      toggleValue = !toggleValue;
+    });
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -41,6 +49,7 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(
                       'ตั้งเวลาให้อาหาร',
@@ -49,6 +58,57 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
                         fontSize: s45,
                       ),
                     ),
+                    InkWell(
+                      onTap: _toggleButton,
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 200),
+                        height: screenWidthDp / 12.5,
+                        width: screenWidthDp / 6,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(screenWidthDp),
+                          color: toggleValue
+                              ? AppColors.toggleEnable
+                              : AppColors.toggleDisable,
+                        ),
+                        child: Stack(
+                          children: <Widget>[
+                            AnimatedPositioned(
+                                duration: Duration(milliseconds: 200),
+                                curve: Curves.easeIn,
+                                left: toggleValue
+                                    ? ((screenWidthDp / 7) / 2) + 6
+                                    : 0,
+                                right: toggleValue
+                                    ? 0
+                                    : ((screenWidthDp / 7) / 2) + 6,
+                                child: Column(
+                                  children: <Widget>[
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border.all(
+                                          color: Colors.grey.withOpacity(0.6),
+                                          width: 0.2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                            screenWidthDp),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.cardShadow,
+                                            offset: Offset(0.0, 10.0),
+                                            blurRadius: 20.0,
+                                          )
+                                        ],
+                                      ),
+                                      width: screenWidthDp / 12.5,
+                                      height: screenWidthDp / 12.5,
+                                    ),
+                                  ],
+                                ))
+                          ],
+                        ),
+                      ),
+                    )
                   ],
                 ),
                 Container(
