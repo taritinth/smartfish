@@ -24,7 +24,6 @@ class _HomeState extends State<Home> {
 
   Map<String, dynamic> realtime;
   FirebaseDatabase db = FirebaseDatabase.instance;
-  bool loading = true;
 
   String getDate(int timeStamp, String format) {
     var datetime = DateTime.fromMillisecondsSinceEpoch(timeStamp * 1000);
@@ -294,6 +293,7 @@ class _HomeState extends State<Home> {
                   ],
                 ),
                 CircularPercentIndicator(
+                  animateFromLastPercent: true,
                   radius: screenWidthDp / 3.5,
                   lineWidth: screenWidthDp / 40,
                   animation: true,

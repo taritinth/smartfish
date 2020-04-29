@@ -26,7 +26,6 @@ class _MainPageState extends State<MainPage> {
 
   int lastUpdate = 0; //timestamp
   bool connectStatus = false;
-  bool loading = false;
 
   Map<String, dynamic> realtime;
   FirebaseDatabase db = FirebaseDatabase.instance;
@@ -57,7 +56,6 @@ class _MainPageState extends State<MainPage> {
   }
 
   getStatus() {
-    loading = true;
     var stream = db.reference().child('realtime').onValue;
     stream.listen((field) {
       realtime = {
