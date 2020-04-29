@@ -243,7 +243,7 @@ class _HomeState extends State<Home> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        '$waterTemp',
+                        '${waterTemp.toStringAsFixed(2)}',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: s60,
@@ -347,7 +347,7 @@ class _HomeState extends State<Home> {
                 Row(
                   children: <Widget>[
                     Text(
-                      'คุณภาพน้ำ',
+                      'ความขุ่นของน้ำ',
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: s45,

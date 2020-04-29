@@ -153,7 +153,7 @@ class _LightingState extends State<Lighting>
                     InkWell(
                       onTap: widget.connectStatus ? _toggleButton : null,
                       child: AnimatedContainer(
-                        duration: Duration(milliseconds: 200),
+                        duration: Duration(milliseconds: 150),
                         height: screenWidthDp / 12.5,
                         width: screenWidthDp / 6,
                         decoration: BoxDecoration(
@@ -165,7 +165,7 @@ class _LightingState extends State<Lighting>
                         child: Stack(
                           children: <Widget>[
                             AnimatedPositioned(
-                                duration: Duration(milliseconds: 200),
+                                duration: Duration(milliseconds: 150),
                                 curve: Curves.easeIn,
                                 left: _rgbStatus
                                     ? ((screenWidthDp / 7) / 2) + 6
