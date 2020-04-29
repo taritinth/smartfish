@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
@@ -10,9 +11,33 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-bool connectStatus = false;
-
 class _HomeState extends State<Home> {
+  bool connectStatus = false;
+  Map<String, dynamic> realtime;
+  FirebaseDatabase db = FirebaseDatabase.instance;
+  bool loading = true;
+
+  getRealtime() async {
+    var stream = db.reference().child('realtime').onValue;
+    stream.listen((field) {
+      realtime = {
+        "feed_status": field.snapshot.value['feed_status'],
+        "food_remain": field.snapshot.value['food_remain'],
+        "timestamp": field.snapshot.value['timestamp'],
+        "turbidity": field.snapshot.value['turbidity'],
+        "water_temp": field.snapshot.value['water_temp']
+      };
+      setState(() {});
+    });
+    print(realtime);
+  }
+
+  @override
+  void initState() {
+    getRealtime();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     screenutilInit(context);
@@ -25,11 +50,14 @@ class _HomeState extends State<Home> {
             horizontal: screenWidthDp / 15, vertical: screenHeightDp / 20),
         children: <Widget>[
           InkWell(
-            onTap: () {
-              setState(() {
-                connectStatus = !connectStatus;
-              });
-            },
+            // onTap: () async {
+            //   var test = await Database().getRealtime();
+            //   print('Home : ${test["timestamp"]}');
+            //   setState(() {
+            //     realtime = test["timestamp"];
+            //     connectStatus = !connectStatus;
+            //   });
+            // },
             child: AnimatedContainer(
               duration: Duration(milliseconds: 200),
               curve: Curves.easeInOutCubic,
@@ -83,7 +111,7 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                       Text(
-                        'ข้อมูลล่าสุด วันนี้ 20:21 น.',
+                        'ข้อมูลล่าสุด ${realtime["timestamp"]}',
                         style: TextStyle(
                           height: 0.7,
                           color: connectStatus
@@ -133,7 +161,7 @@ class _HomeState extends State<Home> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        '27.09',
+                        realtime["water_temp"].toString(),
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: s60,
@@ -186,12 +214,12 @@ class _HomeState extends State<Home> {
                   radius: screenWidthDp / 3.5,
                   lineWidth: screenWidthDp / 40,
                   animation: true,
-                  percent: 0.7,
+                  percent: realtime["food_remain"] / 100,
                   center: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        '70',
+                        realtime["food_remain"].toString(),
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: s60,
@@ -250,7 +278,7 @@ class _HomeState extends State<Home> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        'ปกติ',
+                        realtime["turbidity"] < 3 ? 'เริ่มขุ่น' : 'ปกติ',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: s60,
@@ -258,7 +286,9 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                       Text(
-                        'ไม่จำเป็นต้องเปลี่ยนน้ำ',
+                        realtime["turbidity"] < 3
+                            ? 'ควรเปลี่ยนน้ำ'
+                            : 'ไม่จำเป็นต้องเปลี่ยนน้ำ',
                         style: TextStyle(
                           height: 0.7,
                           color: Colors.black38,
