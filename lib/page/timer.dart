@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:smartfish/theme/AppColors.dart';
 import 'package:smartfish/theme/ScreenUtil.dart';
 
-class Timer extends StatefulWidget {
+class TimerConfig extends StatefulWidget {
   bool connectStatus;
-  Timer({@required this.connectStatus});
+  TimerConfig({@required this.connectStatus});
   @override
-  _TimerState createState() => _TimerState();
+  _TimerConfigState createState() => _TimerConfigState();
 }
 
-class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
+class _TimerConfigState extends State<TimerConfig>
+    with AutomaticKeepAliveClientMixin {
   int _hourValue = 0, _minValue = 0, _durValue = 200;
   bool _timerStatus = false;
 
@@ -41,7 +42,7 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
         _durValue = field.snapshot.value['duration'];
         _timerStatus = field.snapshot.value['status'];
       });
-      print(timer);
+      print('timer : $timer');
     });
   }
 

@@ -26,12 +26,15 @@ class _LightingState extends State<Lighting>
         "mode": field.snapshot.value['mode'],
         "status": field.snapshot.value['status'],
       };
-      setState(() {
-        _rgbMode = field.snapshot.value['mode'];
-        _rgbStatus = field.snapshot.value['status'];
-      });
+      if (!field.snapshot.value.isEmpty) {
+        setState(() {
+          _rgbMode = field.snapshot.value['mode'];
+          _rgbStatus = field.snapshot.value['status'];
+        });
+        print('realtime rgb: $rgb');
+      }
+      setState(() {});
     });
-    print(rgb);
   }
 
   _toggleButton() {

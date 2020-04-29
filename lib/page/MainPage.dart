@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -17,10 +19,15 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  Timer timer;
   //Get now timestamp
-  int nowTimeStamp = DateTime.now().toLocal().millisecondsSinceEpoch ~/ 1000;
+  int nowTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+  bool newUpdate = false;
 
+  int lastUpdate = 0; //timestamp
   bool connectStatus = false;
+  bool loading = false;
+
   Map<String, dynamic> realtime;
   FirebaseDatabase db = FirebaseDatabase.instance;
 
@@ -36,9 +43,12 @@ class _MainPageState extends State<MainPage> {
   int currentPages = 0;
 
   // final List<Widget> pages = [Home(), Timer(), Lighting()];
-  isConnect(int nowTimeStamp, int lastUpdate) {
+  isConnect(int lastUpdate) {
+    print('now timestamp: $nowTimeStamp');
+    print('last update: $lastUpdate');
+    nowTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     setState(() {
-      if (nowTimeStamp - lastUpdate >= 5) {
+      if (nowTimeStamp - lastUpdate >= 10) {
         connectStatus = false;
       } else {
         connectStatus = true;
@@ -47,16 +57,20 @@ class _MainPageState extends State<MainPage> {
   }
 
   getStatus() {
+    loading = true;
     var stream = db.reference().child('realtime').onValue;
     stream.listen((field) {
       realtime = {
         "feed_status": field.snapshot.value['feed_status'],
-        "timestamp": field.snapshot.value['timestamp'],
+        "last_update": field.snapshot.value['last_update'],
       };
-      isConnect(nowTimeStamp, field.snapshot.value['timestamp']);
-      setState(() {});
+      if (!field.snapshot.value.isEmpty) {
+        setState(() {
+          lastUpdate = field.snapshot.value['last_update'];
+        });
+        print('realtime main: $realtime');
+      }
     });
-    print(realtime);
   }
 
   _scrollTo(int index) {
@@ -80,10 +94,19 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void initState() {
+    // for check connection status
+    timer = Timer.periodic(
+        Duration(seconds: 5), (Timer t) => isConnect(lastUpdate));
     initializeDateFormatting();
     Intl.defaultLocale = 'th';
     getStatus();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -149,7 +172,7 @@ class _MainPageState extends State<MainPage> {
           Home(
             connectStatus: connectStatus,
           ),
-          Timer(
+          TimerConfig(
             connectStatus: connectStatus,
           ),
           Lighting(

@@ -17,7 +17,10 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   //Get now timestamp
-  int nowTimeStamp = DateTime.now().toLocal().millisecondsSinceEpoch ~/ 1000;
+  int nowTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+  int lastUpdate = 0; //timestamp
+  double waterTemp = 0, turbidity = 5;
+  int foodRemain = 100;
 
   Map<String, dynamic> realtime;
   FirebaseDatabase db = FirebaseDatabase.instance;
@@ -36,17 +39,23 @@ class _HomeState extends State<Home> {
       realtime = {
         "feed_status": field.snapshot.value['feed_status'],
         "food_remain": field.snapshot.value['food_remain'],
-        "timestamp": field.snapshot.value['timestamp'],
+        "last_update": field.snapshot.value['last_update'],
         "turbidity": field.snapshot.value['turbidity'],
         "water_temp": field.snapshot.value['water_temp']
       };
-      setState(() {});
+      if (!field.snapshot.value.isEmpty) {
+        setState(() {
+          lastUpdate = field.snapshot.value['last_update'];
+          waterTemp = field.snapshot.value['water_temp'];
+          foodRemain = field.snapshot.value['food_remain'];
+          turbidity = field.snapshot.value['turbidity'].toDouble();
+        });
+        print('realtime main: $realtime');
+      }
     });
-    print(realtime);
   }
 
-  turbidityStandard(double turbidity) {
-    int turb = turbidity.round();
+  turbidityStandard(int turb) {
     switch (turb) {
       case 0:
         return 'แย่มาก';
@@ -74,8 +83,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  turbidityComment(double turbidity) {
-    int turb = turbidity.round();
+  turbidityComment(int turb) {
     switch (turb) {
       case 0:
         return 'เปลี่ยนน้ำเถอะขอร้อง';
@@ -186,7 +194,7 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                       Text(
-                        'ข้อมูลล่าสุด ${getDate(realtime["timestamp"], 'd MMM HH:mm')} น.',
+                        'ล่าสุด ${getDate(lastUpdate, 'd MMM HH:mm')} น.',
                         style: TextStyle(
                           height: 0.7,
                           color: widget.connectStatus
@@ -236,7 +244,7 @@ class _HomeState extends State<Home> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        realtime["water_temp"].toString(),
+                        '$waterTemp',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: s60,
@@ -289,12 +297,12 @@ class _HomeState extends State<Home> {
                   radius: screenWidthDp / 3.5,
                   lineWidth: screenWidthDp / 40,
                   animation: true,
-                  percent: realtime["food_remain"] / 100,
+                  percent: foodRemain.toDouble() / 100,
                   center: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        realtime["food_remain"].toString(),
+                        '$foodRemain',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: s60,
@@ -353,7 +361,7 @@ class _HomeState extends State<Home> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        turbidityStandard(realtime["turbidity"].toDouble()),
+                        turbidityStandard(turbidity.round()),
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: s60,
@@ -361,7 +369,7 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                       Text(
-                        turbidityComment(realtime["turbidity"].toDouble()),
+                        turbidityComment(turbidity.round()),
                         style: TextStyle(
                           height: 0.7,
                           color: Colors.black38,

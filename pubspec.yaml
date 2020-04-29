@@ -32,6 +32,7 @@ dependencies:
   firebase_database: ^3.1.5
   intl: ^0.16.1
   preload_page_view: ^0.1.4
+  flare_flutter: ^2.0.1
 
 dev_dependencies:
   flutter_test:
