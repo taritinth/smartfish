@@ -1,27 +1,58 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:smartfish/theme/AppColors.dart';
 import 'package:smartfish/theme/ScreenUtil.dart';
 
 class Lighting extends StatefulWidget {
+  bool connectStatus;
+  Lighting({@required this.connectStatus});
   @override
   _LightingState createState() => _LightingState();
 }
 
 class _LightingState extends State<Lighting>
     with AutomaticKeepAliveClientMixin {
-  String selectMode = 'Cycle';
+  String _rgbMode = 'Cycle';
   bool toggleValue = false;
+  bool _rgbStatus = false;
+
+  Map<String, dynamic> rgb;
+  FirebaseDatabase db = FirebaseDatabase.instance;
+
+  getRGB() {
+    var stream = db.reference().child('rgb').onValue;
+    stream.listen((field) {
+      rgb = {
+        "mode": field.snapshot.value['mode'],
+        "status": field.snapshot.value['status'],
+      };
+      setState(() {
+        _rgbMode = field.snapshot.value['mode'];
+        _rgbStatus = field.snapshot.value['status'];
+      });
+    });
+    print(rgb);
+  }
 
   _toggleButton() {
     setState(() {
-      toggleValue = !toggleValue;
+      //update true / false to timer status
+      db.reference().child('rgb').update({
+        "status": !_rgbStatus,
+      });
     });
   }
 
   _selectMode(String mode) {
     setState(() {
-      selectMode = mode;
+      _rgbMode = mode;
     });
+  }
+
+  @override
+  void initState() {
+    getRGB();
+    super.initState();
   }
 
   @override
@@ -47,7 +78,7 @@ class _LightingState extends State<Lighting>
                   blurRadius: 20.0,
                 )
               ],
-              color: selectMode == mode ? AppColors.primary : Colors.white,
+              color: _rgbMode == mode ? AppColors.primary : Colors.white,
             ),
             duration: Duration(milliseconds: 200),
             curve: Curves.easeInOut,
@@ -55,13 +86,18 @@ class _LightingState extends State<Lighting>
               child: Icon(
                 rgbIcon,
                 size: s52,
-                color: selectMode == mode ? Colors.white : AppColors.primary,
+                color: _rgbMode == mode ? Colors.white : AppColors.primary,
               ),
             ),
           ),
-          onTap: () {
-            _selectMode(mode);
-          },
+          onTap: widget.connectStatus
+              ? () {
+                  _selectMode(mode);
+                  db.reference().child('rgb').update({
+                    "mode": mode,
+                  });
+                }
+              : null,
         ),
         Text(
           mode,
@@ -112,14 +148,14 @@ class _LightingState extends State<Lighting>
                       ),
                     ),
                     InkWell(
-                      onTap: _toggleButton,
+                      onTap: widget.connectStatus ? _toggleButton : null,
                       child: AnimatedContainer(
                         duration: Duration(milliseconds: 200),
                         height: screenWidthDp / 12.5,
                         width: screenWidthDp / 6,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(screenWidthDp),
-                          color: toggleValue
+                          color: _rgbStatus
                               ? AppColors.toggleEnable
                               : AppColors.toggleDisable,
                         ),
@@ -128,10 +164,10 @@ class _LightingState extends State<Lighting>
                             AnimatedPositioned(
                                 duration: Duration(milliseconds: 200),
                                 curve: Curves.easeIn,
-                                left: toggleValue
+                                left: _rgbStatus
                                     ? ((screenWidthDp / 7) / 2) + 6
                                     : 0,
-                                right: toggleValue
+                                right: _rgbStatus
                                     ? 0
                                     : ((screenWidthDp / 7) / 2) + 6,
                                 child: Column(

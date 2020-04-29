@@ -5,19 +5,32 @@ import 'package:outline_material_icons/outline_material_icons.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:smartfish/theme/AppColors.dart';
 import 'package:smartfish/theme/ScreenUtil.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class Home extends StatefulWidget {
+  bool connectStatus;
+  Home({@required this.connectStatus});
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-  bool connectStatus = false;
+  //Get now timestamp
+  int nowTimeStamp = DateTime.now().toLocal().millisecondsSinceEpoch ~/ 1000;
+
   Map<String, dynamic> realtime;
   FirebaseDatabase db = FirebaseDatabase.instance;
   bool loading = true;
 
-  getRealtime() async {
+  String getDate(int timeStamp, String format) {
+    var datetime = DateTime.fromMillisecondsSinceEpoch(timeStamp * 1000);
+    String date;
+    date = DateFormat(format).format(datetime);
+    return date;
+  }
+
+  getRealtime() {
     var stream = db.reference().child('realtime').onValue;
     stream.listen((field) {
       realtime = {
@@ -32,8 +45,68 @@ class _HomeState extends State<Home> {
     print(realtime);
   }
 
+  turbidityStandard(double turbidity) {
+    int turb = turbidity.round();
+    switch (turb) {
+      case 0:
+        return 'แย่มาก';
+        break;
+
+      case 1:
+        return 'แย่';
+        break;
+
+      case 2:
+        return 'ไม่ดี';
+        break;
+
+      case 3:
+        return 'ไม่ค่อยดี';
+        break;
+
+      case 4:
+        return 'ปกติ';
+        break;
+
+      case 5:
+        return 'ดีมาก';
+        break;
+    }
+  }
+
+  turbidityComment(double turbidity) {
+    int turb = turbidity.round();
+    switch (turb) {
+      case 0:
+        return 'เปลี่ยนน้ำเถอะขอร้อง';
+        break;
+
+      case 1:
+        return 'เปลี่ยนน้ำทันที';
+        break;
+
+      case 2:
+        return 'ควรเปลี่ยนน้ำ';
+        break;
+
+      case 3:
+        return 'เปลี่ยนน้ำก็ดีนะ';
+        break;
+
+      case 4:
+        return 'ไม่จำเป็นต้องเปลี่ยนน้ำ';
+        break;
+
+      case 5:
+        return 'ไม่จำเป็นต้องเปลี่ยนน้ำ';
+        break;
+    }
+  }
+
   @override
   void initState() {
+    initializeDateFormatting();
+    Intl.defaultLocale = 'th';
     getRealtime();
     super.initState();
   }
@@ -55,7 +128,7 @@ class _HomeState extends State<Home> {
             //   print('Home : ${test["timestamp"]}');
             //   setState(() {
             //     realtime = test["timestamp"];
-            //     connectStatus = !connectStatus;
+            //     widget.connectStatus = !widget.connectStatus;
             //   });
             // },
             child: AnimatedContainer(
@@ -73,7 +146,7 @@ class _HomeState extends State<Home> {
                     blurRadius: 20.0,
                   )
                 ],
-                color: connectStatus
+                color: widget.connectStatus
                     ? AppColors.primary
                     : AppColors.connectionLost,
               ),
@@ -84,7 +157,7 @@ class _HomeState extends State<Home> {
                       Text(
                         'สถานะ',
                         style: TextStyle(
-                          color: connectStatus
+                          color: widget.connectStatus
                               ? Colors.white
                               : AppColors.connectionLostText,
                           fontSize: s45,
@@ -93,28 +166,30 @@ class _HomeState extends State<Home> {
                     ],
                   ),
                   Icon(
-                    connectStatus ? Icons.wifi : OMIcons.wifiOff,
+                    widget.connectStatus ? Icons.wifi : OMIcons.wifiOff,
                     size: screenWidthDp / 6,
-                    color: connectStatus
+                    color: widget.connectStatus
                         ? Colors.white
                         : AppColors.connectionLostText,
                   ),
                   Column(
                     children: <Widget>[
                       Text(
-                        connectStatus ? 'เชื่อมต่ออยู่' : 'ไม่ได้เชื่อมต่อ',
+                        widget.connectStatus
+                            ? 'เชื่อมต่อแล้ว'
+                            : 'ไม่ได้เชื่อมต่อ',
                         style: TextStyle(
-                          color: connectStatus
+                          color: widget.connectStatus
                               ? Colors.white
                               : AppColors.connectionLostText,
                           fontSize: s48,
                         ),
                       ),
                       Text(
-                        'ข้อมูลล่าสุด ${realtime["timestamp"]}',
+                        'ข้อมูลล่าสุด ${getDate(realtime["timestamp"], 'd MMM HH:mm')} น.',
                         style: TextStyle(
                           height: 0.7,
-                          color: connectStatus
+                          color: widget.connectStatus
                               ? Colors.white54
                               : Colors.grey.withOpacity(0.7),
                           fontSize: s28,
@@ -264,7 +339,7 @@ class _HomeState extends State<Home> {
                 Row(
                   children: <Widget>[
                     Text(
-                      'ความขุ่นของน้ำ',
+                      'คุณภาพน้ำ',
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: s45,
@@ -278,7 +353,7 @@ class _HomeState extends State<Home> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        realtime["turbidity"] < 3 ? 'เริ่มขุ่น' : 'ปกติ',
+                        turbidityStandard(realtime["turbidity"].toDouble()),
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: s60,
@@ -286,9 +361,7 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                       Text(
-                        realtime["turbidity"] < 3
-                            ? 'ควรเปลี่ยนน้ำ'
-                            : 'ไม่จำเป็นต้องเปลี่ยนน้ำ',
+                        turbidityComment(realtime["turbidity"].toDouble()),
                         style: TextStyle(
                           height: 0.7,
                           color: Colors.black38,

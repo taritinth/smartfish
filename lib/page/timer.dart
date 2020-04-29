@@ -1,25 +1,57 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smartfish/theme/AppColors.dart';
 import 'package:smartfish/theme/ScreenUtil.dart';
 
 class Timer extends StatefulWidget {
+  bool connectStatus;
+  Timer({@required this.connectStatus});
   @override
   _TimerState createState() => _TimerState();
 }
 
 class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
   int _hourValue = 0, _minValue = 0, _durValue = 200;
-  bool toggleValue = false;
+  bool _timerStatus = false;
 
+  Map<String, dynamic> timer;
+  FirebaseDatabase db = FirebaseDatabase.instance;
   _toggleButton() {
     setState(() {
-      toggleValue = !toggleValue;
+      //update true / false to timer status
+      db.reference().child('timer/timer1').update({
+        "status": !_timerStatus,
+      });
+    });
+  }
+
+  getTimer() {
+    var stream = db.reference().child('timer/timer1').onValue;
+    stream.listen((field) {
+      timer = {
+        "duration": field.snapshot.value['duration'],
+        "hour": field.snapshot.value['hour'],
+        "minute": field.snapshot.value['minute'],
+        "status": field.snapshot.value['status']
+      };
+      setState(() {
+        _hourValue = field.snapshot.value['hour'];
+        _minValue = field.snapshot.value['minute'];
+        _durValue = field.snapshot.value['duration'];
+        _timerStatus = field.snapshot.value['status'];
+      });
+      print(timer);
     });
   }
 
   @override
   bool get wantKeepAlive => true;
+  @override
+  void initState() {
+    getTimer();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,14 +91,14 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
                       ),
                     ),
                     InkWell(
-                      onTap: _toggleButton,
+                      onTap: widget.connectStatus ? _toggleButton : null,
                       child: AnimatedContainer(
                         duration: Duration(milliseconds: 200),
                         height: screenWidthDp / 12.5,
                         width: screenWidthDp / 6,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(screenWidthDp),
-                          color: toggleValue
+                          color: _timerStatus
                               ? AppColors.toggleEnable
                               : AppColors.toggleDisable,
                         ),
@@ -75,10 +107,10 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
                             AnimatedPositioned(
                                 duration: Duration(milliseconds: 200),
                                 curve: Curves.easeIn,
-                                left: toggleValue
+                                left: _timerStatus
                                     ? ((screenWidthDp / 7) / 2) + 6
                                     : 0,
-                                right: toggleValue
+                                right: _timerStatus
                                     ? 0
                                     : ((screenWidthDp / 7) / 2) + 6,
                                 child: Column(
@@ -124,7 +156,7 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
                         ),
                       ),
                       Text(
-                        ' $_durValue ms',
+                        ' ${_durValue.toString()} ms',
                         style: TextStyle(
                           color: Colors.black38,
                           fontSize: s60,
@@ -171,11 +203,16 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
                           min: 0.0,
                           max: 23.0,
                           divisions: 23,
-                          label: '$_hourValue',
+                          label: '${_hourValue.toString()}',
                           onChanged: (value) {
-                            setState(() {
+                            if (widget.connectStatus) {
                               _hourValue = value.round();
-                            });
+                              setState(() {
+                                db.reference().child('timer/timer1').update({
+                                  "hour": value.round(),
+                                });
+                              });
+                            }
                           },
                         ),
                       ),
@@ -212,11 +249,16 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
                           min: 0.0,
                           max: 59.0,
                           divisions: 59,
-                          label: '$_minValue',
+                          label: '${_minValue.toString()}',
                           onChanged: (double value) {
-                            setState(() {
+                            if (widget.connectStatus) {
                               _minValue = value.round();
-                            });
+                              setState(() {
+                                db.reference().child('timer/timer1').update({
+                                  "minute": value.round(),
+                                });
+                              });
+                            }
                           },
                         ),
                       ),
@@ -253,11 +295,16 @@ class _TimerState extends State<Timer> with AutomaticKeepAliveClientMixin {
                           min: 200.0,
                           max: 3000.0,
                           divisions: 14,
-                          label: '$_durValue',
+                          label: '${_durValue.toString()}',
                           onChanged: (value) {
-                            setState(() {
+                            if (widget.connectStatus) {
                               _durValue = value.round();
-                            });
+                              setState(() {
+                                db.reference().child('timer/timer1').update({
+                                  "duration": value.round(),
+                                });
+                              });
+                            }
                           },
                         ),
                       ),

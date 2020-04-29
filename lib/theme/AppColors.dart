@@ -7,6 +7,7 @@ class AppColors {
   static Color softGrey = Color(0xffF1F2F4);
   static Color connectionLost = Color(0xffE6E6E6);
   static Color connectionLostText = Color(0xff8D8D8D);
+  static Color connectionLostColor = Color(0xff5A72FF).withOpacity(0.7);
   static Color iconEnable = Color(0xff818181);
   static Color iconDisable = Color(0xffC9C9C9);
   static Color toggleEnable = Color(0xff5A72FF);

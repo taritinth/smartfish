@@ -1,4 +1,8 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
+import 'package:preload_page_view/preload_page_view.dart';
 import 'package:smartfish/page/home.dart';
 import 'package:smartfish/page/lighting.dart';
 import 'package:smartfish/page/timer.dart';
@@ -13,10 +17,47 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  PageController pageController = PageController(viewportFraction: 1.0);
+  //Get now timestamp
+  int nowTimeStamp = DateTime.now().toLocal().millisecondsSinceEpoch ~/ 1000;
+
+  bool connectStatus = false;
+  Map<String, dynamic> realtime;
+  FirebaseDatabase db = FirebaseDatabase.instance;
+
+  String getDate(int timeStamp, String format) {
+    var datetime = DateTime.fromMillisecondsSinceEpoch(timeStamp * 1000);
+    String date;
+    date = DateFormat(format).format(datetime);
+    return date;
+  }
+
+  PreloadPageController pageController =
+      PreloadPageController(viewportFraction: 1.0);
   int currentPages = 0;
 
-  final List<Widget> pages = [Home(), Timer(), Lighting()];
+  // final List<Widget> pages = [Home(), Timer(), Lighting()];
+  isConnect(int nowTimeStamp, int lastUpdate) {
+    setState(() {
+      if (nowTimeStamp - lastUpdate >= 5) {
+        connectStatus = false;
+      } else {
+        connectStatus = true;
+      }
+    });
+  }
+
+  getStatus() {
+    var stream = db.reference().child('realtime').onValue;
+    stream.listen((field) {
+      realtime = {
+        "feed_status": field.snapshot.value['feed_status'],
+        "timestamp": field.snapshot.value['timestamp'],
+      };
+      isConnect(nowTimeStamp, field.snapshot.value['timestamp']);
+      setState(() {});
+    });
+    print(realtime);
+  }
 
   _scrollTo(int index) {
     pageController.animateToPage(index,
@@ -38,6 +79,14 @@ class _MainPageState extends State<MainPage> {
   }
 
   @override
+  void initState() {
+    initializeDateFormatting();
+    Intl.defaultLocale = 'th';
+    getStatus();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     screenutilInit(context);
     return Scaffold(
@@ -51,6 +100,7 @@ class _MainPageState extends State<MainPage> {
               right: screenWidthDp / 15,
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Column(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -65,7 +115,7 @@ class _MainPageState extends State<MainPage> {
                       ),
                     ),
                     Text(
-                      '27 April, 2020',
+                      getDate(nowTimeStamp, 'd MMMM, y'),
                       style: TextStyle(
                         height: 0.7,
                         color: Color(0xff9E9E9E),
@@ -74,13 +124,20 @@ class _MainPageState extends State<MainPage> {
                       ),
                     ),
                   ],
-                )
+                ),
+                Icon(
+                  connectStatus ? Icons.wifi : OMIcons.wifiOff,
+                  size: s52,
+                  color: connectStatus
+                      ? AppColors.primary
+                      : AppColors.connectionLostText,
+                ),
               ],
             ),
           ),
         ),
       ),
-      body: PageView(
+      body: PreloadPageView(
         controller: pageController,
         physics: BouncingScrollPhysics(),
         onPageChanged: (int index) {
@@ -89,9 +146,15 @@ class _MainPageState extends State<MainPage> {
           });
         },
         children: <Widget>[
-          Home(),
-          Timer(),
-          Lighting(),
+          Home(
+            connectStatus: connectStatus,
+          ),
+          Timer(
+            connectStatus: connectStatus,
+          ),
+          Lighting(
+            connectStatus: connectStatus,
+          ),
         ],
       ),
       bottomNavigationBar: Container(
@@ -143,7 +206,9 @@ class _MainPageState extends State<MainPage> {
               ),
               child: ClipOval(
                 child: Material(
-                  color: AppColors.primary,
+                  color: connectStatus
+                      ? AppColors.primary
+                      : AppColors.connectionLostColor,
                   child: InkWell(
                     splashColor: Colors.black.withOpacity(0.2),
                     child: Container(
@@ -154,7 +219,7 @@ class _MainPageState extends State<MainPage> {
                         'assets/icon/custom_grain.svg',
                       ),
                     ),
-                    onTap: () {},
+                    onTap: connectStatus ? () => {} : null,
                   ),
                 ),
               ),
