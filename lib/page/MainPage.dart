@@ -47,7 +47,7 @@ class _MainPageState extends State<MainPage> {
     print('last update: $lastUpdate');
     nowTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     setState(() {
-      if (nowTimeStamp - lastUpdate >= 10) {
+      if (nowTimeStamp - lastUpdate >= 6) {
         connectStatus = false;
       } else {
         connectStatus = true;
