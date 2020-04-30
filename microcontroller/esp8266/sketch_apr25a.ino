@@ -34,9 +34,10 @@ unsigned long lastTimer = 0;
 //Realtime Status
 int distance = 0, bottleHeight = 13, remainHeight = 0, foodRemain = 0;
 float turbidity, waterTemp;
-bool feeding = false, feedCmd = false;
+bool feeding = false;
 bool rgb = false;
 String rgbMode = "";
+String cmd = "";
 
 //Timer setting
 bool t1Status = false;
@@ -135,21 +136,22 @@ int checkFood() {
 }
 
 void feedListener() {
-  if (Firebase.failed()) {
-    Serial.println(Firebase.error());
-    return;
-  } else {
-    feedCmd = Firebase.getBool("/status/feed");
-    if (feedCmd) {
-      myservo.write(90);
-    } else {
-      myservo.write(0);
-    }
+  if (cmd == "on_feed") {
+    myservo.write(90);
+  } else if (cmd == "off_feed"){
+    myservo.write(0);
   }
 }
 
 void loop()
 {
+  if (Firebase.failed()) {
+    Serial.println(Firebase.error());
+    return;
+  } else {
+    cmd = Firebase.getString("/cmd/value");
+  }
+
   //Get timestamp now
   time_t now = time(nullptr);
 
@@ -204,8 +206,8 @@ void loop()
     Serial.println();
 
     //feed cmd
-    Serial.print("feedCmd: ");
-    Serial.print(feedCmd);
+    Serial.print("cmd: ");
+    Serial.print(cmd);
     Serial.println();
 
     //checkFood

@@ -21,6 +21,8 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   Timer timer;
 
+  List<String> cmd = ['off_feed', 'on_feed'];
+
   /// Get [nowTimeStamp]
   int nowTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
   bool newUpdate = false;
@@ -79,11 +81,11 @@ class _MainPageState extends State<MainPage> {
     });
 
     /// get [feedStatus]
-    var stream2 = db.reference().child('status').onValue;
+    var stream2 = db.reference().child('cmd').onValue;
     stream2.listen((field) {
       if (!field.snapshot.value.isEmpty) {
         setState(() {
-          feedStatus = field.snapshot.value['feed'];
+          feedStatus = field.snapshot.value['value'] == cmd[1] ? true : false;
         });
         print('feedStatus main: $feedStatus');
       }
@@ -225,8 +227,8 @@ class _MainPageState extends State<MainPage> {
               ),
               onTap: connectStatus
                   ? () {
-                      db.reference().child('status').update({
-                        "feed": !feedStatus,
+                      db.reference().child('cmd').update({
+                        "value": feedStatus ? cmd[0] : cmd[1],
                       });
                     }
                   : null,
