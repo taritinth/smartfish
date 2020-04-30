@@ -36,7 +36,6 @@ class _HomeState extends State<Home> {
     var stream = db.reference().child('realtime').onValue;
     stream.listen((field) {
       realtime = {
-        "feed_status": field.snapshot.value['feed_status'],
         "food_remain": field.snapshot.value['food_remain'],
         "last_update": field.snapshot.value['last_update'],
         "turbidity": field.snapshot.value['turbidity'],
@@ -49,7 +48,7 @@ class _HomeState extends State<Home> {
           foodRemain = field.snapshot.value['food_remain'];
           turbidity = field.snapshot.value['turbidity'].toDouble();
         });
-        print('realtime main: $realtime');
+        print('realtime home: $realtime');
       }
     });
   }

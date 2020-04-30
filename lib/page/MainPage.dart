@@ -20,14 +20,19 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   Timer timer;
-  //Get now timestamp
+
+  /// Get [nowTimeStamp]
   int nowTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
   bool newUpdate = false;
 
-  int lastUpdate = 0; //timestamp
+  /// for recieve [lastUpdate] timestamp.
+  int lastUpdate = 0;
+
+  bool feedStatus = false;
+
   bool connectStatus = false;
 
-  Map<String, dynamic> realtime;
+  // Map<String, dynamic> realtime;
   FirebaseDatabase db = FirebaseDatabase.instance;
 
   String getDate(int timeStamp, String format) {
@@ -42,13 +47,19 @@ class _MainPageState extends State<MainPage> {
   int currentPages = 0;
 
   // final List<Widget> pages = [Home(), Timer(), Lighting()];
+
   isConnect(int lastUpdate) {
-    print('now timestamp: $nowTimeStamp');
-    print('last update: $lastUpdate');
     nowTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    print(
+        'now timestamp: $nowTimeStamp : ${getDate(nowTimeStamp, 'HH:mm:ss dd/MM/yyyy')}');
+    print(
+        'last update: $lastUpdate: ${getDate(lastUpdate, 'HH:mm:ss dd/MM/yyyy')}');
+    print('seconds diff: ${nowTimeStamp - lastUpdate}');
     setState(() {
-      if (nowTimeStamp - lastUpdate >= 6) {
+      /// if [lastUpdate] timestamp >= 15 seconds change [connectStatus] = false.
+      if (nowTimeStamp - lastUpdate >= 15) {
         connectStatus = false;
+        print('connection lost');
       } else {
         connectStatus = true;
       }
@@ -56,17 +67,25 @@ class _MainPageState extends State<MainPage> {
   }
 
   getStatus() {
+    /// get [lastUpdate] timestamp.
     var stream = db.reference().child('realtime').onValue;
     stream.listen((field) {
-      realtime = {
-        "feed_status": field.snapshot.value['feed_status'],
-        "last_update": field.snapshot.value['last_update'],
-      };
       if (!field.snapshot.value.isEmpty) {
         setState(() {
           lastUpdate = field.snapshot.value['last_update'];
         });
-        print('realtime main: $realtime');
+        // print('lastUpdate main: $lastUpdate');
+      }
+    });
+
+    /// get [feedStatus]
+    var stream2 = db.reference().child('status').onValue;
+    stream2.listen((field) {
+      if (!field.snapshot.value.isEmpty) {
+        setState(() {
+          feedStatus = field.snapshot.value['feed'];
+        });
+        print('feedStatus main: $feedStatus');
       }
     });
   }
@@ -92,9 +111,10 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void initState() {
-    // for check connection status
+    /// Cronjob for check [connectStatus].
     timer = Timer.periodic(
         Duration(seconds: 5), (Timer t) => isConnect(lastUpdate));
+    // Get date symbol by local
     initializeDateFormatting();
     Intl.defaultLocale = 'th';
     getStatus();
@@ -178,103 +198,118 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        height: bottomBarHeight,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: InkWell(
-                child: SizedBox(
-                  height: bottomBarHeight,
-                  child: Icon(
-                    OMIcons.dashboard,
-                    size: s45,
-                    color: _getIconColor(0),
-                  ),
-                ),
-                onTap: () {
-                  _scrollTo(0);
-                  _setCurrentPage(0);
-                },
-              ),
-            ),
-            Expanded(
-              child: InkWell(
-                child: SizedBox(
-                  height: bottomBarHeight,
-                  child: Icon(
-                    OMIcons.accessAlarm,
-                    size: s45,
-                    color: _getIconColor(1),
-                  ),
-                ),
-                onTap: () {
-                  _scrollTo(1);
-                  _setCurrentPage(1);
-                },
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.mainButtonShadow,
-                    offset: Offset(0.0, 10.0),
-                    blurRadius: 20.0,
-                  )
-                ],
-              ),
-              child: ClipOval(
-                child: Material(
-                  color: connectStatus
-                      ? AppColors.primary
-                      : AppColors.connectionLostColor,
-                  child: InkWell(
-                    splashColor: Colors.black.withOpacity(0.2),
-                    child: Container(
-                      width: screenWidthDp / 5.5,
-                      height: screenWidthDp / 5.5,
-                      padding: EdgeInsets.all(screenWidthDp / 18),
-                      child: SvgPicture.asset(
-                        'assets/icon/custom_grain.svg',
-                      ),
-                    ),
-                    onTap: connectStatus ? () => {} : null,
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: InkWell(
-                child: SizedBox(
-                  height: bottomBarHeight,
-                  child: Icon(
-                    OMIcons.dataUsage,
-                    size: s45,
-                    color: _getIconColor(2),
-                  ),
-                ),
-                onTap: () {
-                  _scrollTo(2);
-                  _setCurrentPage(2);
-                },
-              ),
-            ),
-            Expanded(
-              child: InkWell(
-                child: SizedBox(
-                  height: bottomBarHeight,
-                  child: Icon(
-                    OMIcons.notificationsActive,
-                    size: s45,
-                    color: _getIconColor(3),
-                  ),
-                ),
-                onTap: () {},
-              ),
-            ),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.mainButtonShadow.withOpacity(0.1),
+              offset: Offset(0.0, 10.0),
+              blurRadius: 20.0,
+            )
           ],
+        ),
+        child: ClipOval(
+          child: Material(
+            color: connectStatus
+                ? feedStatus ? Colors.redAccent : AppColors.primary
+                : AppColors.connectionLostColor,
+            child: InkWell(
+              splashColor: Colors.black.withOpacity(0.2),
+              child: Container(
+                width: screenWidthDp / 5.5,
+                height: screenWidthDp / 5.5,
+                padding: EdgeInsets.all(screenWidthDp / 18),
+                child: SvgPicture.asset(
+                  'assets/icon/custom_grain.svg',
+                ),
+              ),
+              onTap: connectStatus
+                  ? () {
+                      db.reference().child('status').update({
+                        "feed": !feedStatus,
+                      });
+                    }
+                  : null,
+            ),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        notchMargin: 4.0,
+        child: Container(
+          height: bottomBarHeight,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Expanded(
+                child: InkWell(
+                  child: SizedBox(
+                    height: bottomBarHeight,
+                    child: Icon(
+                      OMIcons.dashboard,
+                      size: s45,
+                      color: _getIconColor(0),
+                    ),
+                  ),
+                  onTap: () {
+                    _scrollTo(0);
+                    _setCurrentPage(0);
+                  },
+                ),
+              ),
+              Expanded(
+                child: InkWell(
+                  child: SizedBox(
+                    height: bottomBarHeight,
+                    child: Icon(
+                      OMIcons.accessAlarm,
+                      size: s45,
+                      color: _getIconColor(1),
+                    ),
+                  ),
+                  onTap: () {
+                    _scrollTo(1);
+                    _setCurrentPage(1);
+                  },
+                ),
+              ),
+              SizedBox(
+                width: screenWidthDp / 5.5,
+                height: screenWidthDp / 5.5,
+              ),
+              Expanded(
+                child: InkWell(
+                  child: SizedBox(
+                    height: bottomBarHeight,
+                    child: Icon(
+                      OMIcons.dataUsage,
+                      size: s45,
+                      color: _getIconColor(2),
+                    ),
+                  ),
+                  onTap: () {
+                    _scrollTo(2);
+                    _setCurrentPage(2);
+                  },
+                ),
+              ),
+              Expanded(
+                child: InkWell(
+                  child: SizedBox(
+                    height: bottomBarHeight,
+                    child: Icon(
+                      OMIcons.notificationsActive,
+                      size: s45,
+                      color: _getIconColor(3),
+                    ),
+                  ),
+                  onTap: () {},
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

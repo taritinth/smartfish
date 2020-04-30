@@ -34,7 +34,7 @@ unsigned long lastTimer = 0;
 //Realtime Status
 int distance = 0, bottleHeight = 13, remainHeight = 0, foodRemain = 0;
 float turbidity, waterTemp;
-bool feeding = false;
+bool feeding = false, feedCmd = false;
 bool rgb = false;
 String rgbMode = "";
 
@@ -86,24 +86,6 @@ void setup()
   Firebase.set("log/system_start", startTime);
 }
 
-//int pos1 = 0;
-//void moveTo(int position, int speed) {
-//  mapSpeed = map(speed, 0, 30, 30, 0);
-//  if (position > pos) {
-//    for (pos = pos1; pos <= position; pos += 1) {
-//      myservo.write(pos);
-//      pos1 = pos;
-//      delay(mapSpeed);
-//    }
-//  } else {
-//    for (pos = pos1; pos >= position; pos -= 1) {
-//      myservo.write(pos);
-//      pos1 = pos;
-//      delay(mapSpeed);
-//    }
-//  }
-//}
-
 void fetchData() {
   //Fetch data from firebase
   FirebaseObject rgbObject = Firebase.get("/rgb");
@@ -118,17 +100,16 @@ void fetchData() {
 }
 
 void feedTimer() {
-  //define timenow
+  //get timenow
   time_t now = time(nullptr);
   struct tm* p_tm = localtime(&now);
-  unsigned long tnow = millis();
 
   //  For Debug
   //  char timenow[10];
   //  sprintf(timenow, "%02d:%02d:%02d", p_tm->tm_hour, p_tm->tm_min, p_tm->tm_sec);
   //  Serial.println(timenow);
 
-  if (t1Status && p_tm->tm_hour == t1Hour && p_tm->tm_min == t1Minute && p_tm->tm_sec == 0) {
+  if (t1Status && p_tm->tm_hour == t1Hour && p_tm->tm_min == t1Minute && p_tm->tm_sec <= 1) {
     while (!feeding) {
       myservo.write(90);
       delay(t1Duration);
@@ -137,7 +118,7 @@ void feedTimer() {
       feeding = true;
       if (feeding) {
         //Check if feeded, then give it delay to prevent loop run repeatly in small timerDuration.
-        delay(1000);
+        delay(2000);
         break;
       }
     }
@@ -145,29 +126,53 @@ void feedTimer() {
   //When finish above function, then set feeding to false for recieve new command.
   feeding = false;
 }
+
 int checkFood() {
   /*Check remain food*/
   distance = sonar.ping_cm();
   remainHeight = bottleHeight - distance;
-  foodRemain = remainHeight <= 0 ? 0 : (remainHeight*100)/bottleHeight;
+  foodRemain = remainHeight <= 0 ? 0 : (remainHeight * 100) / bottleHeight;
+}
+
+void feedListener() {
+  feedCmd = Firebase.getBool("/status/feed");
+  delay(100);
+  if (feedCmd) {
+    myservo.write(90);
+  } else {
+    myservo.write(0);
+  }
 }
 
 void loop()
 {
   time_t now = time(nullptr);
+
+  //Realtime feed
+  feedListener();
+
   //Timer Function
   feedTimer();
 
   unsigned long tnow = millis();
-  if (tnow - lastLoop > 5000) {
+  // Do this every 5 seconds.
+  if (tnow - lastLoop >= 5000) {
     lastLoop = tnow;
 
     fetchData();
 
-    Serial.println(t1Status);
-    Serial.println(t1Hour);
-    Serial.println(t1Minute);
-    Serial.println(t1Duration);
+    Serial.print("t1Status: ");
+    Serial.print(t1Status);
+    Serial.println();
+    Serial.print("t1Hour: ");
+    Serial.print(t1Hour);
+    Serial.println();
+    Serial.print("t1Minute: ");
+    Serial.print(t1Minute);
+    Serial.println();
+    Serial.print("t1Duration: ");
+    Serial.print(t1Duration);
+    Serial.println();
 
     //    FirebaseObject print
     //    JsonVariant variant = timerObject.getJsonVariant();
@@ -176,22 +181,37 @@ void loop()
     //Trubidity
     int turbiSensor = analogRead(A0);
     turbidity = turbiSensor * (5.0 / 1024.0);
-    Serial.println(turbidity);
+    Serial.print("turbidity: ");
+    Serial.print(turbidity);
+    Serial.println();
 
     //Temp
     tempSensor.requestTemperatures();
     waterTemp = tempSensor.getTempCByIndex(0);
-    Serial.println(waterTemp);
+    Serial.print("waterTemp: ");
+    Serial.print(waterTemp);
+    Serial.println();
 
     //Servo
-    Serial.println(feeding);
+    Serial.print("feeding: ");
+    Serial.print(feeding);
+    Serial.println();
 
+    Serial.print("feedCmd: ");
+    Serial.print(feedCmd);
+    Serial.println();
+    
     checkFood();
-    Serial.println(foodRemain);
+    Serial.print("foodRemain: ");
+    Serial.print(foodRemain);
+    Serial.println();
 
-    Serial.println(feeding);
-    Serial.println(rgb);
-    Serial.println(rgbMode);
+    Serial.print("rgb: ");
+    Serial.print(rgb);
+    Serial.println();
+    Serial.print("rgbMode: ");
+    Serial.print(rgbMode);
+    Serial.println();
 
     Serial.println("----------");
 
@@ -201,7 +221,7 @@ void loop()
     realtime["turbidity"] = turbidity;
     realtime["water_temp"] = waterTemp;
     realtime["food_remain"] = foodRemain;
-    realtime["feed_status"] = feeding;
+    //    realtime["feed_status"] = feeding;
     realtime["last_update"] = now - timezone;
 
     //Firebase set
