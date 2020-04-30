@@ -135,17 +135,22 @@ int checkFood() {
 }
 
 void feedListener() {
-  feedCmd = Firebase.getBool("/status/feed");
-  delay(100);
-  if (feedCmd) {
-    myservo.write(90);
+  if (Firebase.failed()) {
+    Serial.println(Firebase.error());
+    return;
   } else {
-    myservo.write(0);
+    feedCmd = Firebase.getBool("/status/feed");
+    if (feedCmd) {
+      myservo.write(90);
+    } else {
+      myservo.write(0);
+    }
   }
 }
 
 void loop()
 {
+  //Get timestamp now
   time_t now = time(nullptr);
 
   //Realtime feed
@@ -155,6 +160,7 @@ void loop()
   feedTimer();
 
   unsigned long tnow = millis();
+
   // Do this every 5 seconds.
   if (tnow - lastLoop >= 5000) {
     lastLoop = tnow;
@@ -192,20 +198,23 @@ void loop()
     Serial.print(waterTemp);
     Serial.println();
 
-    //Servo
+    //feeding
     Serial.print("feeding: ");
     Serial.print(feeding);
     Serial.println();
 
+    //feed cmd
     Serial.print("feedCmd: ");
     Serial.print(feedCmd);
     Serial.println();
-    
+
+    //checkFood
     checkFood();
     Serial.print("foodRemain: ");
     Serial.print(foodRemain);
     Serial.println();
 
+    //rgb
     Serial.print("rgb: ");
     Serial.print(rgb);
     Serial.println();
@@ -221,7 +230,6 @@ void loop()
     realtime["turbidity"] = turbidity;
     realtime["water_temp"] = waterTemp;
     realtime["food_remain"] = foodRemain;
-    //    realtime["feed_status"] = feeding;
     realtime["last_update"] = now - timezone;
 
     //Firebase set
