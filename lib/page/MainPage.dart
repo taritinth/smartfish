@@ -19,19 +19,22 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  /// Timer for loop check [connectStatus] .
   Timer timer;
 
+  // Command for control feed
   List<String> cmd = ['off_feed', 'on_feed'];
 
-  /// Get [nowTimeStamp]
+  /// Get [nowTimeStamp] and convert to 10 decimal int.
   int nowTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-  bool newUpdate = false;
 
-  /// for recieve [lastUpdate] timestamp.
+  /// For recieve [lastUpdate] timestamp.
   int lastUpdate = 0;
 
-  bool feedStatus = false;
+  /// When start set [feedStatus] to false .
+  String feedStatus = '';
 
+  /// When start set [connectStatus] to false .
   bool connectStatus = false;
 
   // Map<String, dynamic> realtime;
@@ -51,17 +54,19 @@ class _MainPageState extends State<MainPage> {
   // final List<Widget> pages = [Home(), Timer(), Lighting()];
 
   isConnect(int lastUpdate) {
+    /// Get [nowTimeStamp] and convert to 10 decimal int.
     nowTimeStamp = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+
     print(
-        'now timestamp: $nowTimeStamp : ${getDate(nowTimeStamp, 'HH:mm:ss dd/MM/yyyy')}');
+        'Now timestamp : $nowTimeStamp : ${getDate(nowTimeStamp, 'HH:mm:ss dd/MM/yyyy')}');
     print(
-        'last update: $lastUpdate: ${getDate(lastUpdate, 'HH:mm:ss dd/MM/yyyy')}');
-    print('seconds diff: ${nowTimeStamp - lastUpdate}');
+        'Last update   : $lastUpdate : ${getDate(lastUpdate, 'HH:mm:ss dd/MM/yyyy')}');
+    print('Seconds diff: ${nowTimeStamp - lastUpdate}\n--------------------');
     setState(() {
       /// if [lastUpdate] timestamp >= 15 seconds change [connectStatus] = false.
       if (nowTimeStamp - lastUpdate >= 15) {
         connectStatus = false;
-        print('connection lost');
+        print('Connection lost');
       } else {
         connectStatus = true;
       }
@@ -76,7 +81,6 @@ class _MainPageState extends State<MainPage> {
         setState(() {
           lastUpdate = field.snapshot.value['last_update'];
         });
-        // print('lastUpdate main: $lastUpdate');
       }
     });
 
@@ -85,7 +89,7 @@ class _MainPageState extends State<MainPage> {
     stream2.listen((field) {
       if (!field.snapshot.value.isEmpty) {
         setState(() {
-          feedStatus = field.snapshot.value['value'] == cmd[1] ? true : false;
+          feedStatus = field.snapshot.value['value'];
         });
         print('feedStatus main: $feedStatus');
       }
@@ -213,7 +217,7 @@ class _MainPageState extends State<MainPage> {
         child: ClipOval(
           child: Material(
             color: connectStatus
-                ? feedStatus ? Colors.redAccent : AppColors.primary
+                ? feedStatus == cmd[1] ? Colors.redAccent : AppColors.primary
                 : AppColors.connectionLostColor,
             child: InkWell(
               splashColor: Colors.black.withOpacity(0.2),
@@ -228,7 +232,7 @@ class _MainPageState extends State<MainPage> {
               onTap: connectStatus
                   ? () {
                       db.reference().child('cmd').update({
-                        "value": feedStatus ? cmd[0] : cmd[1],
+                        "value": feedStatus == cmd[1] ? cmd[0] : cmd[1],
                       });
                     }
                   : null,
