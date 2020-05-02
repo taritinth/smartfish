@@ -66,6 +66,7 @@ unsigned int fadingMode = 0; //start with all LED's off.
 
 unsigned long startTime = 0; // start time for the chosen fading mode
 
+
 void setup() {
   while (!Serial) {
     delay(100);

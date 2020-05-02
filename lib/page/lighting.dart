@@ -23,13 +23,13 @@ class _LightingState extends State<Lighting>
     var stream = db.reference().child('rgb').onValue;
     stream.listen((field) {
       rgb = {
-        "mode": field.snapshot.value['mode'],
-        "status": field.snapshot.value['status'],
+        "rgb_mode": field.snapshot.value['rgb_mode'],
+        "rgb_status": field.snapshot.value['rgb_status'],
       };
       if (!field.snapshot.value.isEmpty) {
         setState(() {
-          _rgbMode = field.snapshot.value['mode'];
-          _rgbStatus = field.snapshot.value['status'];
+          _rgbMode = field.snapshot.value['rgb_mode'];
+          _rgbStatus = field.snapshot.value['rgb_status'];
         });
         print('realtime rgb: $rgb');
       }
@@ -41,7 +41,7 @@ class _LightingState extends State<Lighting>
     setState(() {
       //update true / false to timer status
       db.reference().child('rgb').update({
-        "status": !_rgbStatus,
+        "rgb_status": !_rgbStatus,
       });
     });
   }
@@ -97,7 +97,7 @@ class _LightingState extends State<Lighting>
               ? () {
                   _selectMode(mode);
                   db.reference().child('rgb').update({
-                    "mode": mode,
+                    "rgb_mode": mode,
                   });
                 }
               : null,

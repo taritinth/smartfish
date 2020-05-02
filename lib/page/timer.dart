@@ -22,7 +22,7 @@ class _TimerConfigState extends State<TimerConfig>
     setState(() {
       //update true / false to timer status
       db.reference().child('timer/timer1').update({
-        "status": !_timerStatus,
+        "timer1_status": !_timerStatus,
       });
     });
   }
@@ -34,13 +34,13 @@ class _TimerConfigState extends State<TimerConfig>
         "duration": field.snapshot.value['duration'],
         "hour": field.snapshot.value['hour'],
         "minute": field.snapshot.value['minute'],
-        "status": field.snapshot.value['status']
+        "timer1_status": field.snapshot.value['timer1_status']
       };
       setState(() {
         _hourValue = field.snapshot.value['hour'];
         _minValue = field.snapshot.value['minute'];
         _durValue = field.snapshot.value['duration'];
-        _timerStatus = field.snapshot.value['status'];
+        _timerStatus = field.snapshot.value['timer1_status'];
       });
       print('timer : $timer');
     });

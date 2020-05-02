@@ -64,7 +64,7 @@ class _MainPageState extends State<MainPage> {
     print('Seconds diff: ${nowTimeStamp - lastUpdate}\n--------------------');
     setState(() {
       /// if [lastUpdate] timestamp >= 15 seconds change [connectStatus] = false.
-      if (nowTimeStamp - lastUpdate >= 15) {
+      if (nowTimeStamp - lastUpdate >= 45) {
         connectStatus = false;
         print('Connection lost');
       } else {
