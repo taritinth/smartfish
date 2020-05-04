@@ -118,12 +118,16 @@ void streamCallback(StreamData data)
             rgbMode = value;
             Serial.println(rgbMode);
           }
+          // Set RGB when recieve new cmd.
+          RGB();
         } else if (data.dataPath() == "/cmd") {
           if (key == "value") {
             cmd = value;
             Serial.println(cmd);
           }
-        } else if (data.dataPath() == "/") { // For recieve all stream data path ["/"] when NODEMCU startup.
+          // Do feedListener when recieve new cmd.
+          feedListener();
+        } else if (data.dataPath() == "/") { // For recieve all stream data ( path ["/"] ) when NODEMCU start.
           if (key == "timer1_status") {
             t1Status = value == "true" ? true : false;
             Serial.println(t1Status);
@@ -146,6 +150,10 @@ void streamCallback(StreamData data)
             cmd = value;
             Serial.println(cmd);
           }
+          // Set last state of RGB when NODEMCU start.
+          RGB();
+          // Get last cmd when NODEMCU start.
+          feedListener();
         }
       }
       Serial.print(", Value: ");
@@ -298,14 +306,8 @@ void RGB() {
 
 void loop()
 {
-  //Realtime feed
-  feedListener();
-
   //Timer Function
   feedTimer();
-
-  //RGB
-  RGB();
 
   // Get timestamp now
   time_t now = time(nullptr);
