@@ -1,37 +1,24 @@
+/*
+ * Created by K. Suwatchai (Mobizt)
+ * 
+ * Email: k_suwatchai@hotmail.com
+ * 
+ * Github: https://github.com/mobizt
+ * 
+ * Copyright (c) 2019 mobizt
+ * 
+ * This example is for FirebaseESP8266 Arduino library v 2.6.0 and later
+ *
+*/
+
 //FirebaseESP8266.h must be included before ESP8266WiFi.h
-//WiFi & Firebase
-#include <ArduinoJson.h>
 #include "FirebaseESP8266.h"
 #include <ESP8266WiFi.h>
-#define WIFI_SSID "BualoiTech"
-#define WIFI_PASSWORD "11223344551"
-#define FIREBASE_HOST "smart-fish-tank-69105.firebaseio.com"
-#define FIREBASE_AUTH "sETZH2EgeJkK18o1LJIvLpYiNSwmwcGWvwKo41YP"
 
-//Ultrasonic without delay
-#include <NewPing.h>
-#define TRIGGER_PIN  2  // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define ECHO_PIN     0  // Arduino pin tied to echo pin on the ultrasonic sensor.
-#define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
-
-//Servo
-#include <Servo.h>
-
-//Temp
-#include <OneWire.h>
-#include <DallasTemperature.h>
-#define ONE_WIRE_BUS D2
-OneWire oneWire(ONE_WIRE_BUS);
-DallasTemperature tempSensor(&oneWire);
-
-//SoftwareSerial
-#include <SoftwareSerial.h>
-SoftwareSerial NodeMCU(12, 14); // RX (D6 = 12) | TX (D5 = 14)
-
-//Servo
-Servo myservo;
-//int mapSpeed, pos = 0;
+#define FIREBASE_HOST "YOUR_FIREBASE_PROJECT.firebaseio.com" //Without http:// or https:// schemes
+#define FIREBASE_AUTH "YOUR_FIREBASE_DATABASE_SECRET"
+#define WIFI_SSID "YOUR_WIFI_AP"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
 
 //Define FirebaseESP8266 data object
 FirebaseData firebaseData1;
@@ -39,36 +26,16 @@ FirebaseData firebaseData2;
 
 unsigned long sendDataPrevMillis = 0;
 
-String path = "/";
+String path = "/Test/Stream";
 
-//uint16_t count = 0;
+uint16_t count = 0;
 
-//RGB mode sent to arduino
-int rgbArduino;
-
-//Realtime Status
-int distance = 0, bottleHeight = 13, remainHeight = 0, foodRemain = 0;
-double turbidity, waterTemp;
-bool feeding = false;
-bool rgb = false;
-String rgbMode = "";
-String recieve, cmd = "";
-
-//Timer setting
-bool t1Status = false;
-int t1Hour, t1Minute, t1Duration;
-
-//NTP Timezone setting
-int startTime;
-int timezone = 7 * 3600;
-int dst = 0;
-
-//Define function
 void printResult(FirebaseData &data);
 void printResult(StreamData &data);
 
 void streamCallback(StreamData data)
 {
+
   Serial.println("Stream Data1 available...");
   Serial.println("STREAM PATH: " + data.streamPath());
   Serial.println("EVENT PATH: " + data.dataPath());
@@ -77,90 +44,6 @@ void streamCallback(StreamData data)
   Serial.print("VALUE: ");
   printResult(data);
   Serial.println();
-  if (data.eventType() == "put" || data.eventType() == "patch") {
-    Serial.println();
-    FirebaseJson &json = data.jsonObject();
-    //Print all object data
-    size_t len = json.iteratorBegin();
-    String key, value = "";
-    int type = 0;
-    for (size_t i = 0; i < len; i++)
-    {
-      json.iteratorGet(i, type, key, value);
-      Serial.print(i);
-      Serial.print(", ");
-      Serial.print("Type: ");
-      Serial.print(type == JSON_OBJECT ? "object" : "array");
-      if (type == JSON_OBJECT)
-      {
-        Serial.print(", Key: ");
-        Serial.print(key);
-        // For recieve stream data from specific path when user setting.
-        if (data.dataPath() == "/timer/timer1") {
-          if (key == "timer1_status") {
-            t1Status = value == "true" ? true : false;
-            Serial.println(t1Status);
-          } else if (key == "hour") {
-            t1Hour = value.toInt();
-            Serial.println(t1Hour);
-          } else if (key == "minute") {
-            t1Minute = value.toInt();
-            Serial.println(t1Minute);
-          } else if (key == "duration") {
-            t1Duration = value.toInt();
-            Serial.println(t1Duration);
-          }
-        } else if (data.dataPath() == "/rgb") {
-          if (key == "rgb_status") {
-            rgb = value == "true" ? true : false;
-            Serial.println(rgb);
-          } else if (key == "rgb_mode") {
-            rgbMode = value;
-            Serial.println(rgbMode);
-          }
-          // Set RGB when recieve new cmd.
-          RGB();
-        } else if (data.dataPath() == "/cmd") {
-          if (key == "value") {
-            cmd = value;
-            Serial.println(cmd);
-          }
-          // Do feedListener when recieve new cmd.
-          feedListener();
-        } else if (data.dataPath() == "/") { // For recieve all stream data ( path ["/"] ) when NODEMCU start.
-          if (key == "timer1_status") {
-            t1Status = value == "true" ? true : false;
-            Serial.println(t1Status);
-          } else if (key == "hour") {
-            t1Hour = value.toInt();
-            Serial.println(t1Hour);
-          } else if (key == "minute") {
-            t1Minute = value.toInt();
-            Serial.println(t1Minute);
-          } else if (key == "duration") {
-            t1Duration = value.toInt();
-            Serial.println(t1Duration);
-          } else if (key == "rgb_status") {
-            rgb = value == "true" ? true : false;
-            Serial.println(rgb);
-          } else if (key == "rgb_mode") {
-            rgbMode = value;
-            Serial.println(rgbMode);
-          } else if (key == "value") {
-            cmd = value;
-            Serial.println(cmd);
-          }
-          // Set last state of RGB when NODEMCU start.
-          RGB();
-          // Get last cmd when NODEMCU start.
-          feedListener();
-        }
-      }
-      Serial.print(", Value: ");
-      Serial.println(value);
-    }
-    json.iteratorEnd();
-  }
 }
 
 void streamTimeoutCallback(bool timeout)
@@ -175,45 +58,20 @@ void streamTimeoutCallback(bool timeout)
 
 void setup()
 {
+
   Serial.begin(115200);
 
-  NodeMCU.begin(115200);
-  NodeMCU.setTimeout(100);
-
-  Serial.setDebugOutput(true);
-
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("connecting");
-  while (WiFi.status() != WL_CONNECTED) {
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED)
+  {
     Serial.print(".");
-    delay(500);
+    delay(300);
   }
   Serial.println();
-
-  Serial.print("connected: ");
+  Serial.print("Connected with IP: ");
   Serial.println(WiFi.localIP());
-
-  configTime(timezone, dst, "pool.ntp.org", "time.nist.gov");
-  Serial.println("\nLoading time");
-  while (!time(nullptr)) {
-    Serial.print("*");
-    delay(1000);
-  }
-  Serial.println("");
-
-  //Temp
-  tempSensor.begin();
-
-  //Turbidity INPUT
-  pinMode(A0, INPUT);
-
-  //Servo
-  myservo.attach(5); //D1
-  myservo.write(0); //auto set servo degree to 0 when start
-
-  // Get timestamp now
-  //  time_t now = time(nullptr);
-  //  int timestampNow = now - timezone;
+  Serial.println();
 
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
   Firebase.reconnectWiFi(true);
@@ -231,6 +89,8 @@ void setup()
   //Set the size of HTTP response buffers in the case where we want to work with large data.
   firebaseData2.setResponseSize(1024);
 
+
+
   if (!Firebase.beginStream(firebaseData1, path))
   {
     Serial.println("------------------------------------");
@@ -243,101 +103,20 @@ void setup()
   Firebase.setStreamCallback(firebaseData1, streamCallback, streamTimeoutCallback);
 }
 
-int checkFood() {
-  /*Check remain food*/
-  distance = sonar.ping_cm();
-  remainHeight = bottleHeight - distance;
-  foodRemain = remainHeight <= 0 ? 0 : (remainHeight * 100) / bottleHeight;
-}
-
-void feedTimer() {
-  //get timenow
-  time_t now = time(nullptr);
-  struct tm* p_tm = localtime(&now);
-
-  //  For Debug
-  //  char timenow[10];
-  //  sprintf(timenow, "%02d:%02d:%02d", p_tm->tm_hour, p_tm->tm_min, p_tm->tm_sec);
-  //  Serial.println(timenow);
-
-  // Use p_tm->tm_sec <= 5 , becuase sometime NODEMCU is doing Firebase.set(every 15s) and then it may be missing the timer.
-  if (t1Status && p_tm->tm_hour == t1Hour && p_tm->tm_min == t1Minute && p_tm->tm_sec <= 5) {
-    while (!feeding) {
-      myservo.write(45);
-      delay(t1Duration);
-      myservo.write(0);
-      delay(t1Duration);
-      feeding = true;
-      if (feeding) {
-        //Check if feeded, then give it delay to prevent loop run repeatly in small timerDuration.
-        delay(5000);
-        break;
-      }
-    }
-  }
-  //When finish above function, then set feeding to false for recieve new command.
-  feeding = false;
-}
-
-void feedListener() {
-  if (cmd == "on_feed") {
-    myservo.write(45);
-  } else if (cmd == "off_feed") {
-    myservo.write(0);
-  }
-}
-
-void RGB() {
-  if (rgbMode == "Cycle") {
-    rgbArduino = 5;
-  } else if (rgbMode == "Wave") {
-    rgbArduino = 8;
-  } else if (rgbMode == "Solo") {
-    rgbArduino = 1;
-  }
-  if (rgb) {
-    byte x = (int)rgbArduino; // convert int to byte for sent via Serial.write
-    NodeMCU.write(x);
-  } else {
-    byte x = (int)0; // convert int to byte for sent via Serial.write
-    NodeMCU.write(x);
-  }
-}
-
 void loop()
 {
-  //Timer Function
-  feedTimer();
-
-  // Get timestamp now
-  time_t now = time(nullptr);
 
   if (millis() - sendDataPrevMillis > 15000)
   {
     sendDataPrevMillis = millis();
-
-    //Trubidity
-    int turbiSensor = analogRead(A0);
-    turbidity = turbiSensor * (5.0 / 1024.0);
-
-    //Temp
-    tempSensor.requestTemperatures();
-    waterTemp = tempSensor.getTempCByIndex(0);
-
-    //checkFood
-    checkFood();
-
-    FirebaseJson json1;
-    int timestampNow = now - timezone;
-    json1.set("turbidity", turbidity);
-    json1.set("water_temp", waterTemp);
-    json1.set("food_remain", foodRemain);
-    json1.set("last_update", timestampNow);
+    count++;
 
     Serial.println("------------------------------------");
     Serial.println("Set JSON...");
 
-    if (Firebase.setJSON(firebaseData2, path + "realtime", json1))
+    FirebaseJson json;
+    json.add("data", "hello").add("num", count);
+    if (Firebase.setJSON(firebaseData2, path + "/Json", json))
     {
       Serial.println("PASSED");
       Serial.println("PATH: " + firebaseData2.dataPath());
@@ -357,7 +136,7 @@ void loop()
   }
 }
 
-void printResult(FirebaseData & data)
+void printResult(FirebaseData &data)
 {
 
   if (data.dataType() == "int")
@@ -438,7 +217,7 @@ void printResult(FirebaseData & data)
   }
 }
 
-void printResult(StreamData & data)
+void printResult(StreamData &data)
 {
 
   if (data.dataType() == "int")
