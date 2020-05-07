@@ -26,7 +26,9 @@ DallasTemperature tempSensor(&oneWire);
 
 //SoftwareSerial
 #include <SoftwareSerial.h>
-SoftwareSerial NodeMCU(12, 14); // RX (D6 = 12) | TX (D5 = 14)
+//TX (D5 = 14)(NODEMCU) - RX 19(MEGA)
+//RX (D6 = 12)(NODEMCU) - TX 18(MEGA) 
+SoftwareSerial NodeMCU(12, 14);
 
 //Servo
 Servo myservo;
@@ -51,7 +53,7 @@ double turbidity, waterTemp;
 bool feeding = false;
 bool rgb = false;
 String rgbMode = "";
-String recieve, cmd = "";
+String cmd = "";
 
 //Timer setting
 bool t1Status = false;

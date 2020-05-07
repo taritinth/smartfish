@@ -71,7 +71,9 @@ void setup() {
     delay(100);
   }
   Serial.begin(115200);
-  //HardwareSerial RX 19(MEGA)-D5(NODEMCU), TX 18(MEGA)-D6(NODEMCU) 
+  //HardwareSerial
+  //RX 19(MEGA)- TX D5(NODEMCU)
+  //TX 18(MEGA)- RX D6(NODEMCU)
   Serial1.begin(115200);
   // Sets the number of 8-bit registers that are used.
   ShiftPWM.SetAmountOfRegisters(numRegisters);
