@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fish Tank</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+
+<body>
+    <style>
+        .masthead {
+            height: 100vh;
+            min-height: 500px;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            /* background-image: url('https://source.unsplash.com/BtbjCFUvBXs/1920x1080');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat; */
+        }
+        
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+    </style>
+    <!-- Full Page Image Header with Vertically Centered Content -->
+    <header class="masthead">
+        <div class="container h-100">
+            <div class="row h-100 align-items-center">
+                <div class="col-sm">
+                    <img src="assets/img/screenshot1.png" class="img-fluid" alt="">
+                </div>
+                <div class="col-sm text-center text-white">
+                    <h1 class="font-weight-light">Smart Fish Tank</h1>
+                    <p class="lead">เครื่องควบคุมและให้อาหารปลาอัติโนมัติควบคุมผ่านแอปพลิเคชั่น</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="font-weight-light">บทคัดย่อ</h2>
+            <p>เนื่องจากผู้จัดทำมีปัญหาเกี่ยวกับเรื่องการให้อาหารปลาที่ตรงเวลาและดูคุณภาพน้ำเพื่อจะเปลี่ยนถ่ายน้ำ ผู้จัดทำจึงคิดค้นเครื่องให้อาหารปลาอัตโนมัติ เครื่องวัดความขุ่นของน้ำ และวัดอุณหภูมิน้ำ โดยสามารถควบคุมอุปกรณ์ผ่านสมาร์ทโฟนได้ เพื่อแก้ปัญหาที่เกิดขึ้นและยังจะสามารถเปลี่ยนสีไฟตู้ปลาเป็น
+                สี RGBและมีลูกเล่นหลายแบบ โดยจะใช้ Node MCU V3 ESP8266 , Waterproof Temperature Sensor DS18B20 ,Turbidity sensor water, Ultrasonic Module HC-SR04+, Servo motor Arduino SG90 ผู้จัดทำจึงได้ Smart Fish tank เพื่อจะอำนวยความสะดวก ให้แก่ผู้เลี้ยงปลาในการดูแลได้ง่ายขึ้น</p>
+            <h2 class="font-weight-light pt-5">รายชื่อสมาชิก</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">รหัสนักศึกษา</th>
+                        <th scope="col">ชื่อ-สกุล</th>
+                        <th scope="col">Github</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>62070065</td>
+                        <td>นายณัฐภัทร ไชยวงศ์</td>
+                        <td>
+                            <a href="https://github.com/fordntp" target="_blank">fordntp</a></td>
+                    </tr>
+                    <tr>
+                        <td>62070087</td>
+                        <td>นายธฤต ขานโบ</td>
+                        <td><a href="https://github.com/taritinth" target="_blank">taritinth</a></td>
+                    </tr>
+                    <tr>
+                        <td>62070097</td>
+                        <td>นายธีรยุทธิ์ ธรรมศิริ</td>
+                        <td><a href="https://github.com/yachtdome" target="_blank">yachtdome</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2 class="font-weight-light pt-5">Application (พัฒนาด้วย Flutter)</h2>
+            <div class="row">
+                <div class="col-sm">
+                    <img src="assets/img/screenshot1.png" class="img-fluid" alt="">
+                </div>
+                <div class="col-sm">
+                    <img src="assets/img/screenshot2.png" class="img-fluid" alt="">
+                </div>
+                <div class="col-sm">
+                    <img src="assets/img/screenshot3.png" class="img-fluid" alt="">
+                </div>
+            </div>
+            <h2 class="font-weight-light pt-5">Source Code ในส่วน ESP8266</h2>
+            <p>ในส่วนนี้ ESP8266 จะเชื่อมต่อกับอินเทอร์เน็ตเพื่อคอยรับค่าจาก Firebase Realtime database</p>
+            <script src="https://gist.github.com/taritinth/59ebfd2445de59dd78759bcfc91c600a.js"></script>
+            <h2 class="font-weight-light pt-5">Source Code ในส่วน Arduino (MEGA 2560) สำหรับควบคุมไฟ RGB</h2>
+            <p>
+                Thank you! <br /> Source from : <b>Creative Stuff</b> <br /> Link :
+                <a href="https://www.youtube.com/watch?v=hqVpxCPFaQk">https://www.youtube.com/watch?v=hqVpxCPFaQk</a
+        >
+      </p>
+            <script src="https://gist.github.com/taritinth/01ea36746bf9fe21a8f0439166eb7447.js"></script>
+        </div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
